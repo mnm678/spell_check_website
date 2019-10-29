@@ -108,7 +108,7 @@ def spell_check_page():
     f = open("file.txt", "w")
     f.write(text)
     f.close()
-    output = subprocess.run(["./a.out", "wordlist.txt", "file.txt"], capture_output=True)
+    output = subprocess.run(["./a.out", "wordlist.txt", "file.txt"], stdout=PIPE, stderr=PIPE)
     return render_template("spell_check.html", textout = text, misspelled = output.stdout, form=form)
   else:
     return render_template("spell_check.html", textout = "", misspelled = "", form=form)
