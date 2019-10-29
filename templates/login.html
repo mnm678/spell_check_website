@@ -1,0 +1,10 @@
+<h1>Login</h1>
+<form method="post">
+  {{ form.csrf_token }}
+  {{ form.uname.label }} {{ form.uname(size=60) }}
+  {{ form.pword.label }} {{ form.pword(size=60) }}
+  {{ form.tfa.label }} {{ form.tfa(id="2fa") }}
+  <input type="submit" value="Submit" method="post">
+</form>
+<p id="result">Result: {{ result }}</p>
+

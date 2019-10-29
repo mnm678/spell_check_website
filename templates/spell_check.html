@@ -1,0 +1,12 @@
+<h1>Register</h1>
+<form method="post" id="f1">
+  {{ form.csrf_token }}
+  Input Text:
+  {{ form.inputtext }}
+  <input type="submit" value="Submit" method="post">
+</form>
+<textarea form="f1" name="inputtext" id="inputtext"></textarea>
+<p id="textout">{{ textout }}</p>
+<br>
+<p id="misspelled">{{ misspelled }}</p>
+
