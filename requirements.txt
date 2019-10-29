@@ -2,3 +2,4 @@ bcrypt
 pyjwt
 pytest
 Flask-WTF
+flask-login
