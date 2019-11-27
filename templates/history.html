@@ -1,0 +1,7 @@
+<h1>History</h1>
+<p id="numqueries">There are {{ numqueries }} queries</p>
+<br>
+{% for record in records %}
+  <p id={{ "query" }}>{{ record.u_query }}</p>
+{% endfor %}
+

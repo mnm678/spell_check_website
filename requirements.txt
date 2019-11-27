@@ -3,3 +3,4 @@ pyjwt
 pytest
 Flask-WTF
 flask-login
+flask-sqlalchemy
