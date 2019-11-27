@@ -86,3 +86,101 @@ def test_spell_check(client):
   rv = client.post("/spell_check", data=sent, follow_redirects=True)
   assert b'id="textout">Words are mspelled' in rv.data
   assert b'id="misspelled"'in rv.data
+
+def test_history(client):
+  #not logged in
+  rv = client.get("/history")
+  assert b'Unauthorized' in rv.data
+  assert b'numqueries' not in rv.data
+
+  #log in the user
+  sent = {"uname":"Test", "pword":"test", "tfa":"abcd"}
+  rv = client.post("/login", data=sent,
+                    follow_redirects=True)
+  assert b'Result: success' in rv.data
+
+  #now load the page
+  rv = client.get("/history")
+  assert b'numqueries' in rv.data
+  assert b'There are 1 queries' in rv.data
+  assert b'Words are mspelled' in rv.data
+
+def test_query_review(client):
+  #not logged in
+  rv = client.get("/history/query1")
+  assert b'Unauthorized' in rv.data
+  assert b'Record View' not in rv.data
+
+  #log in the user
+  sent = {"uname":"Test", "pword":"test", "tfa":"abcd"}
+  rv = client.post("/login", data=sent,
+                    follow_redirects=True)
+  assert b'Result: success' in rv.data
+
+  #load the page
+  rv = client.get("/history/query1")
+  assert b'Record View' in rv.data
+  assert b'Test' in rv.data
+  assert b'Words are mspelled' in rv.data
+
+def test_second_user(client):
+  #register Gollum/precious/1
+  sent = {"uname":"Gollum", "pword":"precious", "tfa":"1"}
+  rv = client.post("/register", data=sent,
+                    follow_redirects=True)
+  assert b'Status: success' in rv.data
+
+  #log in user2
+  sent = {"uname":"Gollum", "pword":"precious", "tfa":"1"}
+  rv = client.post("/login", data=sent,
+                    follow_redirects=True)
+  assert b'Result: success' in rv.data
+
+  #spell check
+  sent = {"inputtext":"My precioussss"}
+  rv = client.post("/spell_check", data=sent, follow_redirects=True)
+  assert b'id="textout">My precioussss' in rv.data
+  assert b'id="misspelled"'in rv.data
+
+  sent = {"inputtext":"Tricksy little hobbits"}
+  rv = client.post("/spell_check", data=sent, follow_redirects=True)
+  assert b'id="textout">Tricksy little hobbits' in rv.data
+  assert b'id="misspelled"'in rv.data
+
+  #history
+  rv = client.get("/history")
+  assert b'numqueries' in rv.data
+  assert b'There are 2 queries' in rv.data
+  assert b'My precioussss' in rv.data
+  assert b'Tricksy little hobbits' in rv.data
+
+  #can't see user1 query
+  rv = client.get("/history/query1")
+  assert b'Unauthorized' in rv.data
+  assert b'Words are mspelled' not in rv.data
+
+  #can see user2 query
+  rv = client.get("/history/query2")
+  assert b'My precioussss' in rv.data
+
+#def test_history_admin(client):
+  #log in admin
+  sent = {"uname":"admin", "pword":"Administrator@1", "tfa":"12345678901"}
+  rv = client.post("/login", data=sent,
+                    follow_redirects=True)
+  assert b'Result: success' in rv.data
+
+  #admin history
+  rv = client.get("/history")
+  assert b'userquery' in rv.data
+
+  #look at user2 history
+  sent = {"userquery":"Gollum"}
+  rv = client.post("/history", data=sent, follow_redirects=True)
+  assert b'precioussss' in rv.data
+  assert b'hobbits' in rv.data
+
+  #can see user2 query
+  rv = client.get("/history/query3")
+  assert b'Tricksy little hobbits' in rv.data
+

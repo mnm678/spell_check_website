@@ -182,9 +182,11 @@ def get_history():
 @app.route("/history/query<n>")
 @login_required
 def show_record(n):
-  #TODO auth
+  username = current_user.username
   query = SpellRecord.query.get(n)
-  return render_template("record.html", query=query)
+  if (username == "admin" or username == query.user):
+    return render_template("record.html", query=query)
+  return "Unauthorized"
 
 
 if __name__ == "__main__":
