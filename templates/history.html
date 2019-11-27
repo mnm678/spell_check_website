@@ -2,6 +2,6 @@
 <p id="numqueries">There are {{ numqueries }} queries</p>
 <br>
 {% for record in records %}
-  <p id={{ "query" }}>{{ record.u_query }}</p>
+  <a id={{ "query" }}{{ record.record_id }} href="/history/query{{record.record_id}}">{{ record.u_query }}</a>
 {% endfor %}
 
