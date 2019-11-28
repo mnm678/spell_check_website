@@ -1,0 +1,17 @@
+<h1>Login History</h1>
+<form method="post" id="f1">
+  {{ form.csrf_token }}
+  Username:
+  {{ form.userid }}
+  <input type="submit" value="Submit" method="post">
+</form>
+<p id="textout">{{ textout }}</p>
+<br>
+<p id="misspelled">{{ misspelled }}</p>
+
+{% for login in logins %}
+  <p id={{ "login" }}{{ login.login_id }}>
+    <p id={{ "login" }}{{ login.login_id }}{{ "_time" }}>{{ login.login_time }}</p>
+    <p id={{ "logout" }}{{ login.login_id }}{{ "_time" }}>{% if login.logout_time %}{{ login.logout_time }}{% else %}"N/A"{% endif %}</p>
+  </p>
+{% endfor %}

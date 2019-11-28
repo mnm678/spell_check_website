@@ -8,9 +8,10 @@ from flask_wtf.csrf import CSRFProtect
 from flask_wtf import FlaskForm
 from wtforms import StringField
 from wtforms.validators import DataRequired
-from flask_login import LoginManager, UserMixin, login_required, login_user, current_user
+from flask_login import LoginManager, UserMixin, login_required, login_user, current_user, logout_user
 
 from flask_sqlalchemy import SQLAlchemy
+import datetime
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 db = SQLAlchemy(app)
 
@@ -61,9 +62,10 @@ class SpellRecord(db.Model):
 class LoginRecord(db.Model):
   __tablename__ = 'login'
 
-  id = db.Column(db.Integer, primary_key = True, autoincrement = True)
+  login_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
   user = db.Column(db.String)
-  time = db.Column(db.Date)
+  login_time = db.Column(db.DateTime)
+  logout_time = db.Column(db.DateTime)
 
 
 db.create_all()
@@ -124,6 +126,8 @@ def login():
     #session management
     user.authenticated = True
     db.session.add(user)
+    login_record = LoginRecord(user=user.username, login_time=datetime.datetime.now())
+    db.session.add(login_record)
     db.session.commit()
     login_user(user)
     resp = make_response(render_template("login.html", result="success", form=form))
@@ -136,8 +140,13 @@ def logout():
   user = current_user
   user.authenticated = False
   db.session.add(user)
+  login_records = LoginRecord.query.filter_by(user=user.username).order_by(LoginRecord.login_time).all()
+  login_record = login_records[-1]
+  login_record.logout_time = datetime.datetime.now()
+  db.session.add(login_record)
   db.session.commit()
-  logout_user(user)
+  logout_user()
+  return "Success"
 
 @app.route("/spell_check", methods=["GET", "POST"])
 @login_required
@@ -187,6 +196,23 @@ def show_record(n):
   if (username == "admin" or username == query.user):
     return render_template("record.html", query=query)
   return "Unauthorized"
+
+class LoginHistoryForm(FlaskForm):
+  userid = StringField('User')
+
+@app.route("/login_history", methods=["GET", "POST"])
+@login_required
+def view_history():
+  form = LoginHistoryForm()
+  if current_user.username == "admin":
+    if form.validate_on_submit():
+      user = form.userid.data
+      logins = LoginRecord.query.filter_by(user=user).all()
+      return render_template("login_history.html", form=form, logins=logins)
+    else:
+      return render_template("login_history.html", form=form)
+  else:
+    return "Unauthorized"
 
 
 if __name__ == "__main__":
