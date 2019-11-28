@@ -163,7 +163,7 @@ def test_second_user(client):
   rv = client.get("/history/query2")
   assert b'My precioussss' in rv.data
 
-#def test_history_admin(client):
+def test_history_admin(client):
   #log in admin
   sent = {"uname":"admin", "pword":"Administrator@1", "tfa":"12345678901"}
   rv = client.post("/login", data=sent,
@@ -183,4 +183,25 @@ def test_second_user(client):
   #can see user2 query
   rv = client.get("/history/query3")
   assert b'Tricksy little hobbits' in rv.data
+
+def test_login_history(client):
+  #not logged in
+  rv = client.get("/login_history")
+  assert b'Unauthorized' in rv.data
+  assert b'userid' not in rv.data
+
+  #log in admin
+  sent = {"uname":"admin", "pword":"Administrator@1", "tfa":"12345678901"}
+  rv = client.post("/login", data=sent,
+                    follow_redirects=True)
+  assert b'Result: success' in rv.data
+
+  #logged in
+  rv = client.get("/login_history")
+  assert b'userid' in rv.data
+
+  #get history for Test
+  sent = {"userid":"Test"}
+  rv = client.post("/login_history", data=sent, follow_redirects=True)
+  assert b'login4_time' in rv.data
 
